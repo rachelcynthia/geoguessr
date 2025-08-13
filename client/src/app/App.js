@@ -160,9 +160,7 @@ const App = () => {
               <Route
                 path="/leaderboard"
                 element={
-                  <PrivateRoute>
                     <Leaderboard />
-                  </PrivateRoute>
                 }
               />
             </Routes>
