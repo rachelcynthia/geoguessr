@@ -1,6 +1,6 @@
-export const shorthands = undefined;
+module.exports.shorthands = undefined;
 
-export const up = (pgm) => {
+module.exports.up = (pgm) => {
     pgm.createSchema('geoguessr_schema', { ifNotExists: true });
     pgm.createTable({ schema: 'geoguessr_schema', name: 'users' }, {
         id: 'id',
@@ -30,7 +30,8 @@ export const up = (pgm) => {
     });
 };
 
-export const down = (pgm) => {
+module.exports.down = (pgm) => {
     pgm.dropTable({ schema: 'geoguessr_schema', name: 'results' });
     pgm.dropTable({ schema: 'geoguessr_schema', name: 'users' });
+    pgm.dropSchema('geoguessr_schema', { ifExists: true });
 };

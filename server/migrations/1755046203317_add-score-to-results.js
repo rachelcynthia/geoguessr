@@ -1,14 +1,6 @@
-/**
- * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
- */
-export const shorthands = undefined;
+module.exports.shorthands = undefined;
 
-/**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
- * @param run {() => void | undefined}
- * @returns {Promise<void> | void}
- */
-export const up = (pgm) => {
+module.exports.up = (pgm) => {
     pgm.addColumn({ schema: 'geoguessr_schema', name: 'results' }, {
     score: { type: 'integer', default: 0, notNull: true }
   });
@@ -23,11 +15,6 @@ export const up = (pgm) => {
   `);
 };
 
-/**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
- * @param run {() => void | undefined}
- * @returns {Promise<void> | void}
- */
-export const down = (pgm) => {
+module.exports.down = (pgm) => {
     pgm.dropColumn({ schema: 'geoguessr_schema', name: 'results' }, 'score');
 };
