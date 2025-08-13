@@ -9,9 +9,9 @@
     "pg": "^8.16.3"
   },
   "scripts": {
-    "start": "node-pg-migrate --migrations-schema=geoguessr_schema up && node index.js",
-    "migrate": "node-pg-migrate --migrations-schema=geoguessr_schema",
-    "migrate:up": "node-pg-migrate --migrations-schema=geoguessr_schema up",
-    "migrate:down": "node-pg-migrate --migrations-schema=geoguessr_schema down"
+    "start": "npx node-pg-migrate --migrations-schema=geoguessr_schema up && node index.js",
+    "migrate": "npx node-pg-migrate --migrations-schema=geoguessr_schema",
+    "migrate:up": "npx node-pg-migrate --migrations-schema=geoguessr_schema up",
+    "migrate:down": "npx node-pg-migrate --migrations-schema=geoguessr_schema down"
   }
 }
