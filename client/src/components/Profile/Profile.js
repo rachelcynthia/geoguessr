@@ -8,7 +8,7 @@ const Profile = () => {
 
 
   useEffect(() => {
-  fetch("http://localhost:3001/api/profile", {
+  fetch(`${process.env.REACT_APP_SERVER_URL}/api/profile`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`
     }

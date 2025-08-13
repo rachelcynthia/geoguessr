@@ -8,7 +8,7 @@ const Leaderboard = () => {
   const [sortConfig, setSortConfig] = useState({ key: "avg_distance", direction: "asc" });
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/leaderboard")
+    fetch(`${process.env.REACT_APP_SERVER_URL}/api/leaderboard`)
       .then(res => res.json())
       .then(setEntries)
       .catch(console.error);

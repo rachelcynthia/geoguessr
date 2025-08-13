@@ -13,7 +13,7 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:3001/api/login", { email, password });
+      const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/login`, { email, password });
       login(res.data.token);
       navigate("/");
     } catch (err) {
