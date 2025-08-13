@@ -4,9 +4,9 @@ import SubmitModal from "../SubmitModal/SubmitModal";
 
 export default function MapWidget({ currentNodePosition, currentFloor, getRandomNode, difficulty }) {
 
-  const zoom = 18;
-  const minZoom = 15;
-  const maxZoom = 20;
+  const zoom = 19;
+  const minZoom = 16;
+  const maxZoom = 25;
   const lat = 53.4675254;
   const lng = -2.234003;
   const mapRef = useRef(null);
@@ -189,7 +189,7 @@ export default function MapWidget({ currentNodePosition, currentFloor, getRandom
                 left: "50%",
                 transform: "translateX(-50%)",
                 zIndex: 1001,
-                backgroundColor: "#1d4ed8",
+                backgroundColor: "#000000ff",
                 color: "white",
                 border: "none",
                 borderRadius: "4px",
@@ -223,9 +223,9 @@ export default function MapWidget({ currentNodePosition, currentFloor, getRandom
                     key={label}
                     onClick={() => setFloor(floorNumber)}
                     style={{
-                      backgroundColor: floor === floorNumber ? "#1d4ed8" : "#f3f4f6",
-                      color: floor === floorNumber ? "white" : "#1d4ed8",
-                      border: "1px solid #1d4ed8",
+                      backgroundColor: floor === floorNumber ? "#000000ff" : "#f3f4f6",
+                      color: floor === floorNumber ? "white" : "#000000ff",
+                      border: "1px solid #000000ff",
                       borderRadius: "4px",
                       padding: "0.25rem 0.5rem",
                       cursor: "pointer"

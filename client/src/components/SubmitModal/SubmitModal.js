@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import './SubmitModal.css';
 
 function calculateDistance(pos1, pos2) {
   const deltaX = pos2.lng - pos1.lng;
@@ -54,7 +55,7 @@ const SubmitModal = ({
         guessed_floor: guessedFloor,
         actual_floor: currentFloor,
         distance_meters: adjustedDistance,
-        score: adjustedDistance <= 10 ? 10 * Number(difficulty) : 0 
+        score: adjustedDistance <= 10 ? 10 * Number(difficulty) : 0
       })
     }).then(res => {
       if (!res.ok) {
@@ -82,46 +83,38 @@ const SubmitModal = ({
   };
 
   return (
-    <div style={styles.overlay}>
-      <div style={styles.modal}>
-        <h2>Distance Result</h2>
-
-        {!isCorrectFloor ? (
-          <p style={{ color: "red" }}>
-            You chose the <strong>wrong floor</strong> (guessed: Floor {floorLabels[guessedFloor]}, actual: Floor {floorLabels[currentFloor]})!
-          </p>
-        ) : (
-          <p style={{ color: "green" }}>
-            You selected the <strong>correct floor</strong>!
-          </p>
+    <div className="results-overlay">
+      <div className="results-modal">
+        <div className='results'>Results</div>
+        {adjustedDistance <= 10 && (
+          <div className='success-message'>
+            Congratulations! You guessed the location within 10 meters!
+          </div>
         )}
 
-        <p>
+        {adjustedDistance > 10 && (
+          <div className='failure-message'>
+            You did not guess the correct location. Better luck next time!
+          </div>
+        )}
+        {!isCorrectFloor ? (
+          <div className='floor-incorrect-message'>
+            You chose the <strong>wrong floor</strong> (guessed: Floor {floorLabels[guessedFloor]}, actual: Floor {floorLabels[currentFloor]})!
+          </div>
+        ) : (
+          <div className='floor-correct-message'>
+            You selected the <strong>correct floor</strong>
+          </div>
+        )}
+        <div className='distance-result'>
           Base distance: <strong>{distance}m</strong><br />
           Floor penalty: {floorDiff * penaltyPerFloor}m<br />
           <strong>Total distance: {adjustedDistance}m</strong>
-        </p>
-
-        <button onClick={onClose}>Close</button>
+        </div>
+        <div className="close-button" onClick={onClose}>Close</div>
       </div>
     </div>
   );
-};
-
-const styles = {
-  overlay: {
-    position: 'fixed',
-    top: 0, left: 0,
-    width: '100%', height: '100%',
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    display: 'flex', justifyContent: 'center', alignItems: 'center'
-  },
-  modal: {
-    backgroundColor: 'white',
-    padding: '20px',
-    borderRadius: '10px',
-    textAlign: 'center'
-  }
 };
 
 export default SubmitModal;

@@ -1,22 +1,11 @@
 import { useEffect, useState } from "react";
 import "./Leaderboard.css";
+import { use } from "react";
 
 const Leaderboard = () => {
   const [entries, setEntries] = useState([]);
-  const [userId, setUserId] = useState(null);
+  const [email, setEmail] = useState(null);
   const [sortConfig, setSortConfig] = useState({ key: "avg_distance", direction: "asc" });
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    fetch("http://localhost:3001/api/me", {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => setUserId(data.id))
-      .catch(console.error);
-  }, []);
 
   useEffect(() => {
     fetch("http://localhost:3001/api/leaderboard")
@@ -24,6 +13,13 @@ const Leaderboard = () => {
       .then(setEntries)
       .catch(console.error);
   }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token){
+      setEmail(localStorage.getItem("email"));
+    }
+  })
 
   const sortedEntries = [...entries].sort((a, b) => {
     let aVal = a[sortConfig.key];
@@ -69,19 +65,16 @@ const Leaderboard = () => {
       <table>
         <thead>
           <tr>
-            <th># <button onClick={() => handleSort("avg_distance")}>⬍</button></th>
-            <th>Name<button onClick={() => handleSort("name")}>⬍</button></th>
-            <th>Location (City, Country)</th>
             <th>Global Rank</th>
             <th>National Rank</th>
-            <th>
-              Avg Distance <button onClick={() => handleSort("avg_distance")}>⬍</button>
-            </th>
+            <th>Name</th>
+            <th>Location (City, Country)</th>
+            <th>Score </th>
           </tr>
         </thead>
         <tbody>
           {sortedEntries.map((entry, idx) => {
-            const isCurrentUser = entry.user_id === userId;
+            const isCurrentUser = entry.email === email;
             const natRankKey = entry.name + entry.city + entry.country;
             return (
               <tr
@@ -91,12 +84,11 @@ const Leaderboard = () => {
                   color: isCurrentUser ? "green" : "black"
                 }}
               >
-                <td>#{idx + 1}</td>
-                <td>{entry.name}</td>
-                <td>{`${entry.city}, ${entry.country}`}</td>
                 <td>{idx + 1}</td> {/* Global Rank */}
                 <td>{nationalRanks[natRankKey]}</td> {/* National Rank */}
-                <td>{Math.round(entry.avg_distance)}m</td>
+                <td>{entry.name}</td>
+                <td>{`${entry.city}, ${entry.country}`}</td>
+                <td>{entry.score}</td>
               </tr>
             );
           })}

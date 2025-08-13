@@ -1,6 +1,5 @@
-import { useState, useContext, useMemo } from "react";
+import { useState, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
-import UserContext from "../../context/UserContext";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import './Login.css';
@@ -9,7 +8,6 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useContext(AuthContext);
-  const [user, setUser] = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -17,7 +15,6 @@ export default function Login() {
     try {
       const res = await axios.post("http://localhost:3001/api/login", { email, password });
       login(res.data.token);
-      setUser(res.data);
       navigate("/");
     } catch (err) {
       alert(err.response?.data?.error || "Login failed");

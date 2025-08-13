@@ -1,25 +1,23 @@
 import { useEffect, useState, useContext } from "react";
-import UserContext from "../../context/UserContext";
 import "./Profile.css";
 
 const Profile = () => {
-  const [results, setResults] = useState([]);
-  const [user] = useContext(UserContext);
-  console.log("user context:", user);
-  const { name, city, country, profile_image, total_attempts, global_rank, country_rank, successful_attempts, failed_attempts } = user || {};
+  const [profileData, setProfileData] = useState([]);
+  console.log("user context:", profileData);
+  const { name, city, country, profile_image, total_attempts, global_rank, country_rank, successful_attempts, failed_attempts, profile_score } = profileData || {};
+
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+  fetch("http://localhost:3001/api/profile", {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    }
+  })
+    .then(res => res.json())
+    .then(data => setProfileData(data))
+    .catch(err => console.error(err));
+}, []);
 
-    fetch("http://localhost:3001/api/my-results", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then(setResults)
-      .catch(console.error);
-  }, []);
 
   const alt_image = profile_image || "/assets/avatars/avatar1.jpg"; // default avatar if none provided
 
@@ -31,6 +29,10 @@ const Profile = () => {
       <div className="profile-name">{name}</div>
       <div className="profile-location">{city}, {country}</div>
       <div className="profile-stats">
+        <div className="profile-stat">
+          <div>{profile_score || "N/A"}</div>
+          <div>Score</div>
+        </div>
         <div className="profile-stat">
           <div>{global_rank || "N/A"}</div>
           <div>Global Rank</div>

@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import MapWidget from "../MapWidget/MapWidget";
 import Profile from "../Profile/Profile";
 import Leaderboard from "../Leaderboard/Leaderboard";
+import { useNavigate } from "react-router-dom";
 
 export default function ImageViewer() {
   const [nodes, setNodes] = useState([]);
@@ -13,13 +14,24 @@ export default function ImageViewer() {
   const [startNode, setStartNode] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [showLeaderBoard, setShowLeaderBoard] = useState(false);
+  const [difficultyClicked, setDifficultyClicked] = useState(false);
 
+  const navigate = useNavigate();
   const location = useLocation();
 
 
   // Parse query parameters
   const queryParams = new URLSearchParams(location.search);
   const difficulty = queryParams.get("difficulty");
+
+
+  const changeDifficulty = (newDifficulty) => {
+    setDifficultyClicked(false);
+    const params = new URLSearchParams(location.search);
+    params.set("difficulty", newDifficulty);
+
+    navigate(`/game?${params.toString()}`, { replace: true });
+  };
 
 
   useEffect(() => {
@@ -45,7 +57,7 @@ export default function ImageViewer() {
     if (nodes.length > 0) {
       getRandomNode();
     }
-  }, [nodes, getRandomNode]);
+  }, [nodes, getRandomNode, difficulty]);
 
 
   const handleMove = useCallback(
@@ -116,6 +128,18 @@ export default function ImageViewer() {
     <div className="image-viewer-container">
       <div className="top-bar">
         <div className="difficulty">Difficulty: {difficultyObject[difficulty] || "Easy"}</div>
+        {!difficultyClicked && (
+          <div onClick={() => setDifficultyClicked(true)} className="start-button">Change Difficulty</div>
+        )}
+        {difficultyClicked && (
+          <div onClick={() => { changeDifficulty(1) }} className="start-button">Easy</div>
+        )}
+        {difficultyClicked && (
+          <div onClick={() => { changeDifficulty(2) }} className="start-button">Medium</div>
+        )}
+        {difficultyClicked && (
+          <div onClick={() => { changeDifficulty(3) }} className="start-button">Hard</div>
+        )}
         <div onClick={handleReset} className="start-button">Go Back to Start</div>
       </div>
       <div className="sub-container">
@@ -149,7 +173,7 @@ export default function ImageViewer() {
 
         <div className="description-game">When you are ready to make your guess, click on the map and submit!</div>
         <div className="map-widget">
-          <MapWidget currentNodePosition={currentNodePosition} currentFloor={currentNode.floor} getRandomNode={getRandomNode} difficulty={difficulty}/>
+          <MapWidget currentNodePosition={currentNodePosition} currentFloor={currentNode.floor} getRandomNode={getRandomNode} difficulty={difficulty} />
 
           {/* <MapWidgetNew nodes={nodes} currentNodePosition={currentNodePosition} currentFloor={currentNode.floor} getRandomNode={getRandomNode} /> */}
 

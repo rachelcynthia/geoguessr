@@ -5,7 +5,6 @@ import { loadSlim } from "@tsparticles/slim";
 import Particles from "@tsparticles/react";
 
 import { AuthProvider } from "../context/AuthContext";
-import { UserProvider } from "../context/UserContext";
 import LandingPage from "../components/LandingPage/LandingPage";
 import PrivateRoute from "../components/PrivateRoute/PrivateRoute";
 import Login from "../components/Login/Login";
@@ -125,7 +124,6 @@ const App = () => {
 
   return (
     <AuthProvider>
-      <UserProvider>
       <Router>
         <div className="app-container">
           <div ref={navRef}>
@@ -171,7 +169,6 @@ const App = () => {
           </div>
         </div>
       </Router>
-      </UserProvider>
     </AuthProvider>
     
   );

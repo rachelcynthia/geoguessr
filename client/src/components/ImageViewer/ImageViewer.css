@@ -117,18 +117,17 @@
   cursor: pointer;
   user-select: none;
   width: fit-content;
-  box-shadow: 0 2px 2px rgba(241, 142, 85, 0.3);
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .start-button:hover {
-  background-color: #f18e55;
-  box-shadow: 0 6px 12px rgba(241, 142, 85, 0.5);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
 .start-button:active {
-  background-color: #f18e55;
-  box-shadow: 0 2px 4px rgba(241, 142, 85, 0.7);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
 

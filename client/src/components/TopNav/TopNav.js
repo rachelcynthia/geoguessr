@@ -2,12 +2,10 @@ import './TopNav.css';
 import { useContext, useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from '../../context/AuthContext';
-import UserContext from '../../context/UserContext';
 
 export default function TopNav() {
   const navigate = useNavigate();
   const { token, logout } = useContext(AuthContext);
-  const [setUser] = useContext(UserContext);
 
   const [show, setShow] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -39,7 +37,6 @@ export default function TopNav() {
   const handleAuthClick = () => {
     if (token) {
       logout();
-      setUser(null); // Clear user context
       navigate("/");
     } else {
       handleNavigation("/login");
