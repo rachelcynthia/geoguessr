@@ -31,7 +31,7 @@ const Register = () => {
         name,
         city,
         country,
-        avatar: selectedAvatar,
+        profile_image: selectedAvatar,
       });
       login(res.data.token);
       navigate("/");

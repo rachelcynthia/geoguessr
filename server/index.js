@@ -24,7 +24,7 @@ app.post("/api/register", async (req, res) => {
       RETURNING id
     `;
 
-    const values = [email, hash, name, city, country, profile_image || null];
+    const values = [email, hash, name, city, country, profile_image];
     const result = await db.query(query, values);
 
     const token = jwt.sign({ id: result.rows[0].id }, process.env.JWT_SECRET);
