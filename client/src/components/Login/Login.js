@@ -1,12 +1,15 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useMemo } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import UserContext from "../../context/UserContext";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
+import './Login.css';
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { login } = useContext(AuthContext);
+  const [user, setUser] = useContext(UserContext);
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
@@ -14,6 +17,7 @@ export default function Login() {
     try {
       const res = await axios.post("http://localhost:3001/api/login", { email, password });
       login(res.data.token);
+      setUser(res.data);
       navigate("/");
     } catch (err) {
       alert(err.response?.data?.error || "Login failed");
@@ -21,27 +25,34 @@ export default function Login() {
   };
 
   return (
-    <form onSubmit={handleLogin}>
-      <h2>Login</h2>
-      <input
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-        placeholder="Email"
-      />
-      <input
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        type="password"
-        placeholder="Password"
-      />
-      <button type="submit">Login</button>
+    <>
+      <div className="login-container">
+        <form onSubmit={handleLogin} className="login-form">
+          <div className="login-title">Login</div>
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder="Email"
+            className="login-input"
+          />
+          <input
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            type="password"
+            placeholder="Password"
+            className="login-input"
+          />
+          <button type="submit" className="login-button">Login</button>
 
-      {/* Register button below */}
-      <p style={{ marginTop: "1rem" }}>
-        Don't have an account? <Link to="/register">Register</Link>
-      </p>
-    </form>
+          {/* Register button below */}
+          <div className="register">
+            Don't have an account? 
+            <Link to="/register" className="register-link">Register</Link>
+          </div>
+        </form>
+      </div>
+    </>
   );
 }

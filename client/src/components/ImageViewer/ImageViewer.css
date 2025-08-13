@@ -1,75 +1,164 @@
+.image-viewer-container {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  max-height: 90vh;
+}
+
 .image-viewer {
-    width: 80vw;
-    height: 80vh;
-    margin-top: 10vh;
-    margin-left: 10vw;
+  width: 70vw;
+  height: 70vh;
 }
-.controls{
-  cursor: pointer;
+.image-container{
+  position: relative;;
 }
-.controls .left {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-}
-.controls .right {
-    position: absolute;
-    right: 10px;
-    top: 50%;
-}
-.controls .front{
-    position: absolute;
-    left: 50%;
-    top: 10px;
-}
-.controls .back{
-    position: absolute;
-    left: 50%;
-    bottom: 10px;
-}
-
-.logout-button {
-  background-color: #ef4444;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  margin-left: 10px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.logout-button:hover {
-  background-color: #dc2626;
-}
-
-.leaderboard {
+.controls {
   position: absolute;
-  top: 1rem;
-  left: 1rem;
-  background-color: white;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  max-width: 250px;
-  z-index: 10;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* So only arrow divs get clicks */
+  transform: translate(-50%, -50%);
 }
 
-.leaderboard h3 {
-  margin-top: 0;
+.controls>div {
+  position: absolute;
+  pointer-events: auto;
+  width: 60px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s ease;
+}
+
+.controls>div:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+/* Arrow shapes */
+.left::before,
+.right::before,
+.front::before,
+.back::before {
+  content: "";
+  display: block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+/* Left arrow */
+.left {
+  top: 50%;
+  left: 1%;
+  transform: translateY(-50%);
+}
+
+.left::before {
+  border-width: 15px 20px 15px 0;
+  border-color: transparent #333 transparent transparent;
+}
+
+/* Right arrow */
+.right {
+  top: 50%;
+  right: 1%;
+  transform: translateY(-50%);
+}
+
+.right::before {
+  border-width: 15px 0 15px 20px;
+  border-color: transparent transparent transparent #333;
+}
+
+/* Front (up) arrow */
+.front {
+  top: 1%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.front::before {
+  border-width: 0 15px 20px 15px;
+  border-color: transparent transparent #333 transparent;
+}
+
+/* Back (down) arrow */
+.back {
+  bottom: 2%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.back::before {
+  border-width: 20px 15px 0 15px;
+  border-color: #333 transparent transparent transparent;
+}
+
+.start-button {
+  display: inline-block;
+  margin: 0 0 10px 0;
+  padding: 12px 24px;
+  background-color: #000000;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  border-radius: 6px;
+  text-align: right;
+  cursor: pointer;
+  user-select: none;
+  width: fit-content;
+  box-shadow: 0 2px 2px rgba(241, 142, 85, 0.3);
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.start-button:hover {
+  background-color: #f18e55;
+  box-shadow: 0 6px 12px rgba(241, 142, 85, 0.5);
+}
+
+.start-button:active {
+  background-color: #f18e55;
+  box-shadow: 0 2px 4px rgba(241, 142, 85, 0.7);
+}
+
+
+
+/* Description at bottom */
+.description-game {
+  font-size: 24px;
+  color: #262626;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  user-select: none;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: rgba(255, 255, 255, 0.875);
+  padding: 0 10px;
+}
+
+.sub-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .top-bar {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-    gap: 20px;
-    margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 70vw;
 }
 
-.profile-icon {
-    cursor: pointer;
-}
-
-.leaderboard-icon {
-    cursor: pointer;
+.difficulty{
+  text-align: left;
 }

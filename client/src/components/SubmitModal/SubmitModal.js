@@ -17,7 +17,8 @@ const SubmitModal = ({
   setIsSubmitClicked,
   currentFloor,
   guessedFloor,
-  getRandomNode
+  getRandomNode,
+  difficulty
 }) => {
   const currentPosParsed = parseLatLngString(currentNodePosition || "");
   const distance = currentNodePosition && selectedCoords
@@ -52,7 +53,8 @@ const SubmitModal = ({
         actual_lng: currentPosParsed.lng,
         guessed_floor: guessedFloor,
         actual_floor: currentFloor,
-        distance_meters: adjustedDistance
+        distance_meters: adjustedDistance,
+        score: adjustedDistance <= 10 ? 10 * Number(difficulty) : 0 
       })
     }).then(res => {
       if (!res.ok) {

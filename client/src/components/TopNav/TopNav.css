@@ -1,0 +1,52 @@
+.nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    padding: 10px 20px;
+    background-color: rgba(0, 0, 0, 0.7);
+    height: 5vh;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-left: 5vw;
+    cursor: pointer;
+}
+
+.nav-links {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+}
+
+.link {
+    color: white;
+    text-decoration: non;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.topnav-container {
+    position: relative;
+    z-index: 1;
+}
+
+.nav--hidden {
+  transform: translateY(-100%);
+  opacity: 0;
+  pointer-events: none; /* optional: prevent interaction when hidden */
+}
+
+.nav--visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}

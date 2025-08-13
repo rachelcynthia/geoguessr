@@ -1,0 +1,116 @@
+.landing-page-container{
+    text-align: center;
+    position: relative;
+    z-index: 1;
+    color: white;
+    display: flex;
+    justify-content: center; 
+    align-items: center;
+    min-height: 70vh;
+}
+.landing-page {
+    z-index: 1;
+    position: relative;
+    color: white;
+    text-align: center;
+    width: 100vw;
+}
+
+.title {
+    font-size: 3rem;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 1);
+    background-color: rgba(0, 0, 0, 0.5);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.description{
+  font-size: 1.25rem;          
+  font-weight: 400;           
+  color: rgba(255, 255, 255, 0.85); 
+  text-align: center;  
+  padding-top: 2vh;  
+  padding-bottom: 2vh;  
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);     
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  letter-spacing: 0.5px; 
+  background-color: rgba(0, 0, 0, 0.5);      
+}
+
+.start-button-container{
+  display: inline-block;
+  padding: 12px 28px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  margin-top: 2vh;
+  background: linear-gradient(135deg, #9b9a9a, #000);
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+}
+
+.start-button-container:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+  background: linear-gradient(135deg, #ffffff, #000);
+}
+
+.start-button-container:active {
+ transform: scale(0.98);
+}
+
+.landing-page-container {
+  position: relative;
+  z-index: 1;
+}
+
+
+.buttons-container {
+  display: flex;
+  gap: 20px; /* space between buttons */
+  cursor: pointer;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.sub-buttton {
+  position: relative;
+  background: linear-gradient(135deg, #9b9a9a, #000);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  width: 150px;
+  text-align: center;
+  user-select: none;
+  transition: background-color 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.sub-buttton:hover {
+  background-color: linear-gradient(135deg, #9b9a9a, #000);
+}
+
+/* Hide the second div (explanation) initially */
+.sub-buttton > div:nth-child(2) {
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: opacity 0.3s ease, max-height 0.3s ease;
+  font-size: 13px;
+  color: #e0e0e0;
+}
+
+.sub-buttton:hover > div:nth-child(2) {
+  opacity: 1;
+  max-height: 100px; /* enough height for the explanation */
+}

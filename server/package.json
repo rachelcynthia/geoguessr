@@ -5,6 +5,11 @@
     "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "node-pg-migrate": "^8.0.3",
     "pg": "^8.16.3"
+  },
+  "scripts": {
+    "migrate": "node-pg-migrate --migrations-schema=geoguessr_schema",
+    "dev": "npm run migrate up && node index.js"
   }
 }

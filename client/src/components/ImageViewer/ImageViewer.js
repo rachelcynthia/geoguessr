@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import "./ImageViewer.css";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import MapWidget from "../MapWidget/MapWidget";
 import Profile from "../Profile/Profile";
 import Leaderboard from "../Leaderboard/Leaderboard";
@@ -14,12 +14,12 @@ export default function ImageViewer() {
   const [showProfile, setShowProfile] = useState(false);
   const [showLeaderBoard, setShowLeaderBoard] = useState(false);
 
-  const navigate = useNavigate();
+  const location = useLocation();
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
+
+  // Parse query parameters
+  const queryParams = new URLSearchParams(location.search);
+  const difficulty = queryParams.get("difficulty");
 
 
   useEffect(() => {
@@ -47,9 +47,22 @@ export default function ImageViewer() {
     }
   }, [nodes, getRandomNode]);
 
+
   const handleMove = useCallback(
     (direction) => {
       if (!currentNode) return;
+
+      if (difficulty === "3") {
+        // Hard - no navigation allowed
+        return;
+      }
+
+      if (difficulty === "2") {
+        // Medium - allow navigation only if currentNode is the startNode
+        if (currentNode.node !== startNode.node) {
+          return; // block navigation after first move
+        }
+      }
 
       const nextNodeId = currentNode.links[direction];
       if (!nextNodeId) return;
@@ -62,8 +75,9 @@ export default function ImageViewer() {
         setCurrentNodePosition(nextNode.coords);
       }
     },
-    [currentNode, nodes, initialFloor]
+    [currentNode, nodes, initialFloor, difficulty, startNode]
   );
+
 
   const handleReset = () => {
     if (startNode) {
@@ -85,55 +99,61 @@ export default function ImageViewer() {
 
   if (!currentNode) return <p>Loading...</p>;
 
-  const imagePath = `/assets/floor${currentNode.floor}_node${currentNode.node}.jpg`;
+  const imagePath = `/assets/floor/floor${currentNode.floor}_node${currentNode.node}.jpg`;
 
   if (!currentNode) return <p>Loading...</p>;
 
   if (showProfile) return <Profile onClose={() => setShowProfile(false)} />;
   if (showLeaderBoard) return <Leaderboard onClose={() => setShowLeaderBoard(false)} />;
 
+  const difficultyObject = {
+    1: "Easy",
+    2: "Medium",
+    3: "Hard"
+  }
+
   return (
-    <div className="container">
+    <div className="image-viewer-container">
       <div className="top-bar">
-        <button onClick={() => setShowProfile(true)} className="reset-button">
-          Profile
-        </button>
-        <button onClick={() => setShowLeaderBoard(true)} className="reset-button">
-          Leaderboard
-        </button>
-        <button onClick={handleReset} className="reset-button">
-          Go Back to Start
-        </button>
-        <button onClick={handleLogout} className="reset-button">
-          Logout
-        </button>
-
+        <div className="difficulty">Difficulty: {difficultyObject[difficulty] || "Easy"}</div>
+        <div onClick={handleReset} className="start-button">Go Back to Start</div>
       </div>
+      <div className="sub-container">
+        <div className="image-container">
+          <img
+            src={imagePath}
+            alt={`Floor${currentNode.floor}_Node${currentNode.node}`}
+            className="image-viewer"
+          />
 
-      <img
-        src={imagePath}
-        alt={`Floor${currentNode.floor}_Node${currentNode.node}`}
-        className="image-viewer"
-      />
-      <div className="controls">
-        {currentNode.links.left && (
-          <div className="left" onClick={() => handleMove("left")}>Left</div>
-        )}
-        {currentNode.links.front && (
-          <div className="front" onClick={() => handleMove("front")}>Front</div>
-        )}
-        {currentNode.links.right && (
-          <div className="right" onClick={() => handleMove("right")}>Right</div>
-        )}
-        {currentNode.links.back && (
-          <div className="back" onClick={() => handleMove("back")}>Back</div>
-        )}
-        <p className="text-gray-500">
-          Floor {currentNode?.floor} - Node {currentNode?.node}
-        </p>
-      </div>
-      <div className="w-full md:w-96 h-96">
-        <MapWidget currentNodePosition={currentNodePosition} currentFloor={currentNode.floor} getRandomNode={getRandomNode} />
+          <div className="controls">
+            {difficulty !== "3" && ( // no arrows at all in Hard mode
+              <>
+                {currentNode.links.left && (difficulty !== "2" || currentNode.node === startNode.node) && (
+                  <div className="left" onClick={() => handleMove("left")}></div>
+                )}
+                {currentNode.links.front && (difficulty !== "2" || currentNode.node === startNode.node) && (
+                  <div className="front" onClick={() => handleMove("front")}></div>
+                )}
+                {currentNode.links.right && (difficulty !== "2" || currentNode.node === startNode.node) && (
+                  <div className="right" onClick={() => handleMove("right")}></div>
+                )}
+                {currentNode.links.back && (difficulty !== "2" || currentNode.node === startNode.node) && (
+                  <div className="back" onClick={() => handleMove("back")}></div>
+                )}
+              </>
+            )}
+          </div>
+
+        </div>
+
+        <div className="description-game">When you are ready to make your guess, click on the map and submit!</div>
+        <div className="map-widget">
+          <MapWidget currentNodePosition={currentNodePosition} currentFloor={currentNode.floor} getRandomNode={getRandomNode} difficulty={difficulty}/>
+
+          {/* <MapWidgetNew nodes={nodes} currentNodePosition={currentNodePosition} currentFloor={currentNode.floor} getRandomNode={getRandomNode} /> */}
+
+        </div>
       </div>
     </div>
   )

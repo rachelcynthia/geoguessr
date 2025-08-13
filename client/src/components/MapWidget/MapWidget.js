@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Loader } from "@googlemaps/js-api-loader";
 import SubmitModal from "../SubmitModal/SubmitModal";
 
-export default function MapWidget({ currentNodePosition, currentFloor, getRandomNode }) {
+export default function MapWidget({ currentNodePosition, currentFloor, getRandomNode, difficulty }) {
 
   const zoom = 18;
   const minZoom = 15;
@@ -48,7 +48,7 @@ export default function MapWidget({ currentNodePosition, currentFloor, getRandom
 
   useEffect(() => {
     const loader = new Loader({
-      apiKey: "AIzaSyA-rYDanrx7MAH-cPZLJff5CKhLn5L-Bm4",
+      apiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY,
       version: "weekly"
     });
 
@@ -250,6 +250,7 @@ export default function MapWidget({ currentNodePosition, currentFloor, getRandom
           currentFloor={currentFloor}
           guessedFloor={floor}
           getRandomNode={getRandomNode}
+          difficulty={difficulty}
         />
 
       )}
