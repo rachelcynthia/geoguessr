@@ -19,29 +19,8 @@ const Leaderboard = () => {
     }
   }, []);
 
-  // Group entries by country and compute national ranks
-  const entriesByCountry = {};
-  entries.forEach(entry => {
-    if (!entriesByCountry[entry.country]) entriesByCountry[entry.country] = [];
-    entriesByCountry[entry.country].push(entry);
-  });
-
-  const nationalRanks = {};
-  for (const country in entriesByCountry) {
-    // Sort by score descending (higher score = better rank)
-    entriesByCountry[country].sort((a, b) => b.score - a.score);
-    entriesByCountry[country].forEach((entry, idx) => {
-      nationalRanks[entry.name + entry.city + entry.country] = idx + 1;
-    });
-  }
-
-  // Flatten all entries and sort by national rank
-  const sortedEntries = entries
-    .map(entry => ({
-      ...entry,
-      nationalRank: nationalRanks[entry.name + entry.city + entry.country]
-    }))
-    .sort((a, b) => a.nationalRank - b.nationalRank);
+  // Sort by score descending (highest score = rank 1)
+  const sortedEntries = [...entries].sort((a, b) => b.score - a.score);
 
   return (
     <div className="leaderboard">
@@ -49,7 +28,7 @@ const Leaderboard = () => {
       <table>
         <thead>
           <tr>
-            <th>National Rank</th>
+            <th>Global Rank</th>
             <th>Name</th>
             <th>Location (City, Country)</th>
             <th>Score</th>
@@ -66,10 +45,10 @@ const Leaderboard = () => {
                   color: isCurrentUser ? "green" : "black"
                 }}
               >
-                <td>{entry.nationalRank}</td>
+                <td>{idx + 1}</td> {/* Global Rank */}
                 <td>{entry.name}</td>
                 <td>{`${entry.city}, ${entry.country}`}</td>
-                <td>{entry.score}</td>
+                <td>{entry.score || 0}</td>
               </tr>
             );
           })}
