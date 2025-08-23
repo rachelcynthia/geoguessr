@@ -1,16 +1,6 @@
-/**
- * @type {import('node-pg-migrate').ColumnDefinitions | undefined}
- */
-export const shorthands = undefined;
+module.exports.shorthands = undefined;
 
-/**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
- * @param run {() => void | undefined}
- * @returns {Promise<void> | void}
- */
-
-/* eslint-disable camelcase */
-export const up = (pgm) => {
+module.exports.up = (pgm) => {
   pgm.createTable({ schema: 'geoguessr_schema', name: 'guest_results' }, {
     id: 'id', // bigserial primary key
     guest_id: { type: 'text', notNull: true },              // use JWT jti
@@ -33,13 +23,6 @@ export const up = (pgm) => {
   pgm.createIndex({ schema: 'geoguessr_schema', name: 'guest_results' }, ['guest_id', { name: 'created_at', sort: 'DESC' }]);
 };
 
-
-
-/**
- * @param pgm {import('node-pg-migrate').MigrationBuilder}
- * @param run {() => void | undefined}
- * @returns {Promise<void> | void}
- */
-export const down = (pgm) => {
+module.exports.down = (pgm) => {
     pgm.dropTable({ schema: 'geoguessr_schema', name: 'guest_results' });
 };
