@@ -42,6 +42,12 @@ export default function Login() {
   return (
     <div className="login-container">
       <form onSubmit={handleLogin} className="login-form">
+        <div className="guest-button" onClick={handleGuestLogin}>
+          Play as Guest
+        </div>
+
+        <div className="login-sep">OR</div>
+
         <div className="login-title">Login</div>
 
         <input
@@ -61,19 +67,8 @@ export default function Login() {
         />
         <button type="submit" className="login-button">Login</button>
 
-        <div className="login-sep"><span>or</span></div>
-
-        <button
-          type="button"
-          onClick={handleGuestLogin}
-          className="guest-button"
-          title="Play without creating an account"
-        >
-          Play as Guest
-        </button>
-
         <div className="register">
-          Don&apos;t have an account?
+          Don't have an account?
           <Link to="/register" className="register-link">Register</Link>
         </div>
       </form>

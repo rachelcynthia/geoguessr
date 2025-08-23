@@ -26,11 +26,12 @@
 }
 
 .login-button {
-    color: white;
+    color: black;
     padding: 10px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-weight: 600;
     transform: translateY(-2px) scale(1.05);
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
     background: linear-gradient(135deg, hsl(202, 74%, 60%), #f18e55);
@@ -41,12 +42,28 @@
 }
 
 .login-title {
-    font-size: 32px;
-    margin-top: 3vh;
-    margin-bottom: 5vh;
+    font-size: 2rem
 }
 
 .register-link {
     color: white;
     margin-left: 5px;
+}
+
+.login-sep{
+    font-weight: 700;
+    font-size: 1.25rem;
+}
+
+.guest-button {
+    margin-top: 10px;
+    color: black;
+    font-weight: 600;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+    background: linear-gradient(135deg, hsl(202, 74%, 60%), #f18e55);
 }
