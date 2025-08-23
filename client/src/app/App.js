@@ -14,10 +14,12 @@ import ProfilePage from "../components/Profile/Profile";
 import Leaderboard from "../components/Leaderboard/Leaderboard";
 import TopNav from "../components/TopNav/TopNav";
 import "./App.css";
+import TutorialModal from "../components/TutorialModal/TutorialModal";
 
 const App = () => {
   const [init, setInit] = useState(false);
   const navRef = useRef(null);
+  const [difficulty, setDifficulty] = useState(null);
 
   const [contentHeight, setContentHeight] = useState("100vh");
 
@@ -145,7 +147,15 @@ const App = () => {
                 path="/game"
                 element={
                   <PrivateRoute>
-                    <Game />
+                    <Game setDifficulty={setDifficulty} difficulty={difficulty}/>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/tutorial"
+                element={
+                  <PrivateRoute>
+                    <TutorialModal difficulty={difficulty}/>
                   </PrivateRoute>
                 }
               />

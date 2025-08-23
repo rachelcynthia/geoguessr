@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import "./ImageViewer.css";
-import { useLocation } from "react-router-dom";
 import MapWidget from "../MapWidget/MapWidget";
 import Profile from "../Profile/Profile";
 import Leaderboard from "../Leaderboard/Leaderboard";
-import { useNavigate } from "react-router-dom";
 
-export default function ImageViewer() {
+export default function ImageViewer({ setDifficulty, difficulty }) {
+  const restoredRef = useRef(false); // ensure we only restore/pick once
+
   const [nodes, setNodes] = useState([]);
   const [currentNode, setCurrentNode] = useState(null);
   const [currentNodePosition, setCurrentNodePosition] = useState(null);
@@ -14,37 +14,81 @@ export default function ImageViewer() {
   const [startNode, setStartNode] = useState(null);
   const [showProfile, setShowProfile] = useState(false);
   const [showLeaderBoard, setShowLeaderBoard] = useState(false);
-  const [difficultyClicked, setDifficultyClicked] = useState(false);
+  const [score, setScore] = useState(0);
 
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [showDifficultyModal, setShowDifficultyModal] = useState(true);
 
-
-  // Parse query parameters
-  const queryParams = new URLSearchParams(location.search);
-  const difficulty = queryParams.get("difficulty");
-
-
-  const changeDifficulty = (newDifficulty) => {
-    setDifficultyClicked(false);
-    const params = new URLSearchParams(location.search);
-    params.set("difficulty", newDifficulty);
-
-    navigate(`/game?${params.toString()}`, { replace: true });
+  // --- NEW: difficulty config used for the explainer tabs
+  const DIFFICULTY = {
+    easy: { scaleMeters: 25, floorPenalty: 15, maxPoints: 30 },
+    medium: { scaleMeters: 12, floorPenalty: 25, maxPoints: 60 },
+    hard: { scaleMeters: 6, floorPenalty: 40, maxPoints: 100 },
   };
 
+  // --- NEW: explainer collapse + tabs state
+  const [explainerOpen, setExplainerOpen] = useState(false);
+  const [explainerTab, setExplainerTab] = useState("easy");
+
+  const difficultyObject = {
+    1: "Easy",
+    2: "Medium",
+    3: "Hard"
+  };
+
+
+
+  const updateScore = () => {
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+    const isGuest = user?.role === "guest";
+    const token = localStorage.getItem("token");
+    if (isGuest) {
+      fetch(`${process.env.REACT_APP_SERVER_URL}/api/guest-scores`, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+        .then(res => res.json())
+        .then(data => {
+          setScore(data.totalScore || 0);
+        })
+        .catch(err => console.error(err));
+    }
+    else {
+
+      if (token) {
+        fetch(`${process.env.REACT_APP_SERVER_URL}/api/score`, {
+          headers: { Authorization: `Bearer ${token}` }
+        })
+          .then(res => res.json())
+          .then(data => setScore(data.totalScore || 0))
+          .catch(err => console.error(err));
+      }
+    }
+  };
+
+  // FIX: only run on mount
+  useEffect(() => {
+    updateScore();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const selectDifficulty = (level) => {
+    setDifficulty(level);
+    setShowDifficultyModal(false);
+  };
+
+  useEffect(() => {
+    if (difficulty) {
+      selectDifficulty(difficulty);
+    }
+  }, [difficulty]);
 
   useEffect(() => {
     fetch("/data/nodes.json")
       .then((res) => res.json())
-      .then((data) => {
-        setNodes(data);
-      });
+      .then((data) => setNodes(data));
   }, []);
 
   const getRandomNode = useCallback(() => {
     if (nodes.length === 0) return;
-
     const randomIndex = Math.floor(Math.random() * nodes.length);
     const randomNode = nodes[randomIndex];
     setCurrentNode(randomNode);
@@ -53,28 +97,47 @@ export default function ImageViewer() {
     setInitialFloor(randomNode.floor);
   }, [nodes]);
 
+  // --- NEW: restore node if exists ---
   useEffect(() => {
-    if (nodes.length > 0) {
-      getRandomNode();
-    }
-  }, [nodes, getRandomNode, difficulty]);
+    if (!nodes.length || restoredRef.current) return;
 
+    const saved = sessionStorage.getItem("gv_currentNode");
+    if (saved) {
+      try {
+        const { node, floor } = JSON.parse(saved);
+        const match = nodes.find(n => n.node === node && n.floor === floor);
+        if (match) {
+          setCurrentNode(match);
+          setStartNode(match);
+          setCurrentNodePosition(match.coords);
+          setInitialFloor(match.floor);
+          restoredRef.current = true;
+          return;
+        }
+      } catch { }
+    }
+    if (difficulty) {
+      getRandomNode();
+      restoredRef.current = true;
+    }
+  }, [nodes, difficulty, getRandomNode]);
+
+  // --- NEW: save node whenever it changes ---
+  useEffect(() => {
+    if (currentNode) {
+      sessionStorage.setItem(
+        "gv_currentNode",
+        JSON.stringify({ node: currentNode.node, floor: currentNode.floor })
+      );
+    }
+  }, [currentNode]);
 
   const handleMove = useCallback(
     (direction) => {
       if (!currentNode) return;
 
-      if (difficulty === "3") {
-        // Hard - no navigation allowed
-        return;
-      }
-
-      if (difficulty === "2") {
-        // Medium - allow navigation only if currentNode is the startNode
-        if (currentNode.node !== startNode.node) {
-          return; // block navigation after first move
-        }
-      }
+      if (difficulty === 3) return; // Hard = no nav
+      if (difficulty === 2 && currentNode.node !== startNode.node) return; // Medium restriction
 
       const nextNodeId = currentNode.links[direction];
       if (!nextNodeId) return;
@@ -89,7 +152,6 @@ export default function ImageViewer() {
     },
     [currentNode, nodes, initialFloor, difficulty, startNode]
   );
-
 
   const handleReset = () => {
     if (startNode) {
@@ -109,76 +171,151 @@ export default function ImageViewer() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleMove]);
 
+  if (showDifficultyModal) {
+    return (
+      <div className="modal-overlay">
+        <div className="modal">
+          <h2>Select Difficulty</h2>
+
+          <div className="sub-button" onClick={() => { selectDifficulty(1); getRandomNode(); }}>
+            <div>Easy</div>
+            <div>Move anywhere and look around</div>
+          </div>
+
+          <div className="sub-button" onClick={() => { selectDifficulty(2); getRandomNode(); }}>
+            <div>Medium</div>
+            <div>Move only one step</div>
+          </div>
+
+          <div className="sub-button" onClick={() => { selectDifficulty(3); getRandomNode(); }}>
+            <div>Hard</div>
+            <div>Cannot move anywhere</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (!currentNode) return <p>Loading...</p>;
-
-  const imagePath = `/assets/floor/floor${currentNode.floor}_node${currentNode.node}.jpg`;
-
-  if (!currentNode) return <p>Loading...</p>;
-
   if (showProfile) return <Profile onClose={() => setShowProfile(false)} />;
   if (showLeaderBoard) return <Leaderboard onClose={() => setShowLeaderBoard(false)} />;
 
-  const difficultyObject = {
-    1: "Easy",
-    2: "Medium",
-    3: "Hard"
-  }
+  const imagePath = `/assets/floor/floor${currentNode.floor}_node${currentNode.node}.jpg`;
+
+  // helper for active tab values
+  const activeCfg =
+    DIFFICULTY[explainerTab] || DIFFICULTY.easy;
 
   return (
-    <div className="image-viewer-container">
-      <div className="top-bar">
-        <div className="difficulty">Difficulty: {difficultyObject[difficulty] || "Easy"}</div>
-        {!difficultyClicked && (
-          <div onClick={() => setDifficultyClicked(true)} className="start-button">Change Difficulty</div>
-        )}
-        {difficultyClicked && (
-          <div onClick={() => { changeDifficulty(1) }} className="start-button">Easy</div>
-        )}
-        {difficultyClicked && (
-          <div onClick={() => { changeDifficulty(2) }} className="start-button">Medium</div>
-        )}
-        {difficultyClicked && (
-          <div onClick={() => { changeDifficulty(3) }} className="start-button">Hard</div>
-        )}
-        <div onClick={handleReset} className="start-button">Go Back to Start</div>
-      </div>
-      <div className="sub-container">
-        <div className="image-container">
-          <img
-            src={imagePath}
-            alt={`Floor${currentNode.floor}_Node${currentNode.node}`}
-            className="image-viewer"
-          />
+    <div className="image-viewer-wrapper">
+      <div className="image-viewer-container">
+        <div className="top-bar">
+          <div className="difficulty">Current Difficulty: {difficultyObject[difficulty]}</div>
+          <div onClick={() => setShowDifficultyModal(true)} className="start-button">Change Difficulty</div>
+          <div className="difficulty">Score: {score}</div>
+          <div onClick={handleReset} className="start-button">Reset Viewpoint</div>
+        </div>
 
-          <div className="controls">
-            {difficulty !== "3" && ( // no arrows at all in Hard mode
-              <>
-                {currentNode.links.left && (difficulty !== "2" || currentNode.node === startNode.node) && (
-                  <div className="left" onClick={() => handleMove("left")}></div>
-                )}
-                {currentNode.links.front && (difficulty !== "2" || currentNode.node === startNode.node) && (
-                  <div className="front" onClick={() => handleMove("front")}></div>
-                )}
-                {currentNode.links.right && (difficulty !== "2" || currentNode.node === startNode.node) && (
-                  <div className="right" onClick={() => handleMove("right")}></div>
-                )}
-                {currentNode.links.back && (difficulty !== "2" || currentNode.node === startNode.node) && (
-                  <div className="back" onClick={() => handleMove("back")}></div>
-                )}
-              </>
-            )}
+        <div className="sub-container">
+          <div className="image-container">
+            <img
+              src={imagePath}
+              alt={`Floor${currentNode.floor}_Node${currentNode.node}`}
+              className="image-viewer"
+            />
+
+            <div className="controls">
+              {difficulty !== 3 && (
+                <>
+                  {currentNode.links.left && (difficulty !== 2 || currentNode.node === startNode.node) && (
+                    <div className="left" onClick={() => handleMove("left")}></div>
+                  )}
+                  {currentNode.links.front && (difficulty !== 2 || currentNode.node === startNode.node) && (
+                    <div className="front" onClick={() => handleMove("front")}></div>
+                  )}
+                  {currentNode.links.right && (difficulty !== 2 || currentNode.node === startNode.node) && (
+                    <div className="right" onClick={() => handleMove("right")}></div>
+                  )}
+                  {currentNode.links.back && (difficulty !== 2 || currentNode.node === startNode.node) && (
+                    <div className="back" onClick={() => handleMove("back")}></div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
 
-        </div>
-
-        <div className="description-game">When you are ready to make your guess, click on the map and submit!</div>
-        <div className="map-widget">
-          <MapWidget currentNodePosition={currentNodePosition} currentFloor={currentNode.floor} getRandomNode={getRandomNode} difficulty={difficulty} />
-
-          {/* <MapWidgetNew nodes={nodes} currentNodePosition={currentNodePosition} currentFloor={currentNode.floor} getRandomNode={getRandomNode} /> */}
-
+          <div className="description-game">When you are ready to make your guess, click on the map and submit!</div>
+          <div className="map-widget">
+            <MapWidget
+              currentNodePosition={currentNodePosition}
+              currentFloor={currentNode.floor}
+              getRandomNode={getRandomNode}
+              difficulty={difficulty}
+              updateScore={updateScore}
+            />
+          </div>
         </div>
       </div>
+
+      {/* --- Collapsible Scoring Explainer with Tabs --- */}
+      <div className={`scoring-explainer ${explainerOpen ? "open" : ""}`}>
+        <button
+          className="scoring-header"
+          onClick={() => setExplainerOpen(v => !v)}
+          aria-expanded={explainerOpen}
+          aria-controls="scoring-panel"
+        >
+          <span>📊 Scoring Model</span>
+          <span className={`chev ${explainerOpen ? "rot" : ""}`} aria-hidden>▸</span>
+        </button>
+
+        {explainerOpen && (
+          <div id="scoring-panel" className="scoring-body">
+            <p className="muted">
+              Your score depends on how close your guess is to the real location <em>and</em> floor:
+            </p>
+            <ul className="bullets">
+              <li><b>Perfect Snap:</b> Exact floor & within 3m → full points.</li>
+              <li><b>Difficulty:</b> Changes max points and harshness.</li>
+            </ul>
+
+            <div className="tabs" role="tablist" aria-label="Difficulty">
+              {["easy", "medium", "hard"].map(key => (
+                <button
+                  key={key}
+                  role="tab"
+                  aria-selected={explainerTab === key}
+                  className={`tab ${explainerTab === key ? "active" : ""}`}
+                  onClick={() => setExplainerTab(key)}
+                >
+                  {key[0].toUpperCase() + key.slice(1)}
+                </button>
+              ))}
+            </div>
+
+            <div className="tab-panel" role="tabpanel">
+              <div className="grid">
+                <div>
+                  <div className="label">Tolerance Scale</div>
+                  <div className="value">{activeCfg.scaleMeters} m</div>
+                  <div className="hint">Bigger = gentler decay</div>
+                </div>
+                <div>
+                  <div className="label">Floor Penalty</div>
+                  <div className="value">{activeCfg.floorPenalty} m</div>
+                  <div className="hint">Added per wrong floor</div>
+                </div>
+                <div>
+                  <div className="label">Max Points</div>
+                  <div className="value">{activeCfg.maxPoints}</div>
+                  <div className="hint">Perfect snap on correct floor</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      {/* --- /explainer --- */}
     </div>
-  )
+  );
 }

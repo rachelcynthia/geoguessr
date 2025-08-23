@@ -3,7 +3,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const db = require("./db");
-const authMiddleware = require("./authMiddleware");
+const crypto = require('crypto');
+
+const { authMiddleware, requireNonGuest } = require("./authMiddleware");
+const { log } = require("console");
 require('dotenv').config();
 
 const app = express();
@@ -71,7 +74,7 @@ app.post("/api/login", async (req, res) => {
 });
 
 //Profile
-app.get("/api/profile", authMiddleware, async (req, res) => {
+app.get("/api/profile", authMiddleware, requireNonGuest, async (req, res) => {
   try {
     const userId = req.userId;
 
@@ -146,36 +149,103 @@ app.get("/api/profile", authMiddleware, async (req, res) => {
   }
 });
 
+app.get("/api/score", authMiddleware, (req, res) => {
+  const userId = req.userId;
+  db.query(
+    `SELECT COALESCE(SUM(score), 0) AS total_score
+       FROM geoguessr_schema.results
+       WHERE user_id = $1`,
+    [userId]
+  ).then(result => {
+    const totalScore = result.rows[0].total_score || 0;
+    res.json({ totalScore });
+  }).catch(err => {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong" });
+  });
+});
+
+app.post("/api/guest", async (req, res) => {
+  const jti = crypto.randomUUID();
+  const payload = { sub: `guest_${jti}`, role: 'guest', jti };
+  const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '2h' });
+
+  res.json({ token, user: { id: payload.sub, role: 'guest', name: 'Guest' } });
+
+});
+
 // Submit game result
 app.post("/api/submit", authMiddleware, async (req, res) => {
   const {
-    guessed_lat,
-    guessed_lng,
-    actual_lat,
-    actual_lng,
-    guessed_floor,
-    actual_floor,
-    distance_meters,
-    score
+    guessed_lat, guessed_lng, actual_lat, actual_lng,
+    guessed_floor, actual_floor, distance_meters, score
   } = req.body;
+
+  console.log("Submission received")
+
+  // Opportunistic global cleanup (cheap if indexed)
+  await db.query(`DELETE FROM geoguessr_schema.guest_results WHERE expires_at <= now()`);
+
+  if (req.user?.role === 'guest') {
+    console.log("Guest submission", req.user);
+    const expiresAt = new Date((req.user.exp || 0) * 1000); // exp in seconds
+    if (!req.user.jti || !req.user.exp) {
+      return res.status(400).json({ error: 'Invalid guest token' });
+    }
+
+    await db.query(
+      `INSERT INTO geoguessr_schema.guest_results
+       (guest_id, expires_at, guessed_lat, guessed_lng, actual_lat, actual_lng,
+        guessed_floor, actual_floor, distance_meters, score)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+      [
+        req.user.jti, expiresAt,
+        guessed_lat, guessed_lng, actual_lat, actual_lng,
+        guessed_floor, actual_floor, distance_meters, score
+      ]
+    );
+
+    return res.json({ success: true, ephemeral: true });
+  }
+
+  // Registered users: original persistent table
   await db.query(
-    `INSERT INTO geoguessr_schema.results 
-     (user_id, guessed_lat, guessed_lng, actual_lat, actual_lng, guessed_floor, actual_floor, distance_meters, score) 
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+    `INSERT INTO geoguessr_schema.results
+     (user_id, guessed_lat, guessed_lng, actual_lat, actual_lng, guessed_floor, actual_floor, distance_meters, score)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
     [
       req.userId,
-      guessed_lat,
-      guessed_lng,
-      actual_lat,
-      actual_lng,
-      guessed_floor,
-      actual_floor,
-      distance_meters,
-      score
+      guessed_lat, guessed_lng, actual_lat, actual_lng,
+      guessed_floor, actual_floor, distance_meters, score
     ]
   );
+
   res.json({ success: true });
 });
+
+app.get("/api/guest-scores", authMiddleware, async (req, res) => {
+   if (req.user?.role !== 'guest') {
+    return res.status(400).json({ error: 'Not a guest session' });
+  }
+
+  // Opportunistic cleanup
+  await db.query(`DELETE FROM geoguessr_schema.guest_results WHERE expires_at <= now()`);
+
+  db.query(
+    `SELECT COALESCE(SUM(score), 0) AS total_score
+       FROM geoguessr_schema.guest_results
+       WHERE guest_id = $1 AND expires_at > now()`,
+    [req.user.jti]
+  ).then(result => {
+    const totalScore = result.rows[0].total_score || 0;
+    res.json({ totalScore });
+  }).catch(err => {
+    console.error(err);
+    res.status(500).json({ error: "Something went wrong" });
+  })
+});
+
+
 
 // Get leaderboard
 app.get("/api/leaderboard", async (req, res) => {

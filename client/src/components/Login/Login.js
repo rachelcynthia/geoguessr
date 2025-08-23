@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
-import './Login.css';
+import "./Login.css";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -21,35 +21,62 @@ export default function Login() {
     }
   };
 
-  return (
-    <>
-      <div className="login-container">
-        <form onSubmit={handleLogin} className="login-form">
-          <div className="login-title">Login</div>
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder="Email"
-            className="login-input"
-          />
-          <input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            type="password"
-            placeholder="Password"
-            className="login-input"
-          />
-          <button type="submit" className="login-button">Login</button>
+  // --- Option A: Proper guest login (backend issues a real JWT)
+  const handleGuestLogin = async () => {
+    try {
+      const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/api/guest`);
+      // expects: { token, user: { id, name, role: 'guest' } }
+      login(res.data.token, res.data.user);
+      navigate("/game");
+    } catch (err) {
+      alert(err.response?.data?.error || "Guest login failed");
+    }
+  };
 
-          {/* Register button below */}
-          <div className="register">
-            Don't have an account? 
-            <Link to="/register" className="register-link">Register</Link>
-          </div>
-        </form>
-      </div>
-    </>
+  // --- Option B: Quick client-only fallback (no backend change yet)
+  // const handleGuestLogin = () => {
+  //   login("guest", { id: null, name: "Guest", role: "guest" });
+  //   navigate("/game");
+  // };
+
+  return (
+    <div className="login-container">
+      <form onSubmit={handleLogin} className="login-form">
+        <div className="login-title">Login</div>
+
+        <input
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          placeholder="Email"
+          className="login-input"
+        />
+        <input
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          type="password"
+          placeholder="Password"
+          className="login-input"
+        />
+        <button type="submit" className="login-button">Login</button>
+
+        <div className="login-sep"><span>or</span></div>
+
+        <button
+          type="button"
+          onClick={handleGuestLogin}
+          className="guest-button"
+          title="Play without creating an account"
+        >
+          Play as Guest
+        </button>
+
+        <div className="register">
+          Don&apos;t have an account?
+          <Link to="/register" className="register-link">Register</Link>
+        </div>
+      </form>
+    </div>
   );
 }

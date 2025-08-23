@@ -34,6 +34,13 @@
     cursor: pointer;
 }
 
+.link2 {
+    color: white;
+    text-decoration: non;
+    font-size: 1.25rem;
+    cursor: pointer;
+}
+
 .topnav-container {
     position: relative;
     z-index: 1;

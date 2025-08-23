@@ -1,26 +1,13 @@
-import { useState, useContext } from 'react';
 import './LandingPage.css';
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from '../../context/AuthContext';
 
 const LandingPage = () => {
     const navigate = useNavigate();
-    const [showDifficulty, setShowDifficulty] = useState(false);
-    const { token } = useContext(AuthContext);
 
     const handleGameNavigation = () => {
-        if (token) {
-            setShowDifficulty(true);
-        }
-        else {
-            navigate("/game");
-        }
+        navigate("/game");
     }
 
-    const handleDifficultySelection = (difficulty) => {
-        navigate(`/game?difficulty=${difficulty}`);
-        setShowDifficulty(false);
-    }
     return (
         <div className="landing-page-container">
             <div className="landing-page">
@@ -31,16 +18,6 @@ const LandingPage = () => {
                 <div className="start-button-container" onClick={handleGameNavigation}>
                     Start Game
                 </div>
-                {showDifficulty && (
-                    <div className="difficulty-selection">
-                        <div>Choose which mode you want to play:</div>
-                        <div className="buttons-container">
-                            <div className="sub-buttton" onClick={() => handleDifficultySelection("1")}><div>Easy</div><div>Navigate anywhere from the start</div></div>
-                            <div className="sub-buttton" onClick={() => handleDifficultySelection("2")}><div>Medium</div><div>Navigate only to nearest neighbours</div></div>
-                            <div className="sub-buttton" onClick={() => handleDifficultySelection("3")}><div>Hard</div><div>Cannot navigate anywhere</div></div>
-                        </div>
-                    </div>
-                )}
             </div>
         </div>
     );
