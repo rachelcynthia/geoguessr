@@ -35,8 +35,6 @@ export default function ImageViewer({ setDifficulty, difficulty }) {
     3: "Hard"
   };
 
-
-
   const updateScore = () => {
     const user = JSON.parse(localStorage.getItem("user") || "null");
     const isGuest = user?.role === "guest";

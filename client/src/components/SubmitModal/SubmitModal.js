@@ -91,6 +91,12 @@ const SubmitModal = ({
 
   const floorDiff = Math.abs((currentFloor || 0) - (guessedFloor || 0));
 
+    const difficultyObject = {
+    1: "easy",
+    2: "medium",
+    3: "hard"
+  };
+
   useEffect(() => {
     if (submittedRef.current) return;
     submittedRef.current = true;
@@ -124,7 +130,8 @@ const SubmitModal = ({
         guessed_floor: guessedFloor,
         actual_floor: currentFloor,
         distance_meters: adjustedDistance, // includes floor penalty
-        score
+        score,
+        difficulty: difficultyObject[difficulty] || "easy"
       })
     })
       .then(async (res) => {

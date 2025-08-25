@@ -165,7 +165,7 @@ app.get("/api/score", authMiddleware, (req, res) => {
   });
 });
 
-app.post("/api/guest", async (req, res) => {
+app.post("/api/guest", async (_req, res) => {
   const jti = crypto.randomUUID();
   const payload = { sub: `guest_${jti}`, role: 'guest', jti };
   const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '2h' });
@@ -178,10 +178,8 @@ app.post("/api/guest", async (req, res) => {
 app.post("/api/submit", authMiddleware, async (req, res) => {
   const {
     guessed_lat, guessed_lng, actual_lat, actual_lng,
-    guessed_floor, actual_floor, distance_meters, score
+    guessed_floor, actual_floor, distance_meters, score, difficulty
   } = req.body;
-
-  console.log("Submission received")
 
   // Opportunistic global cleanup (cheap if indexed)
   await db.query(`DELETE FROM geoguessr_schema.guest_results WHERE expires_at <= now()`);
@@ -211,12 +209,12 @@ app.post("/api/submit", authMiddleware, async (req, res) => {
   // Registered users: original persistent table
   await db.query(
     `INSERT INTO geoguessr_schema.results
-     (user_id, guessed_lat, guessed_lng, actual_lat, actual_lng, guessed_floor, actual_floor, distance_meters, score)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+     (user_id, guessed_lat, guessed_lng, actual_lat, actual_lng, guessed_floor, actual_floor, distance_meters, score, difficulty)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9, $10)`,
     [
       req.userId,
       guessed_lat, guessed_lng, actual_lat, actual_lng,
-      guessed_floor, actual_floor, distance_meters, score
+      guessed_floor, actual_floor, distance_meters, score, difficulty
     ]
   );
 
@@ -248,23 +246,21 @@ app.get("/api/guest-scores", authMiddleware, async (req, res) => {
 
 
 // Get leaderboard
-app.get("/api/leaderboard", async (req, res) => {
+app.get("/api/leaderboard", async (_req, res) => {
   try {
     const result = await db.query(`
       SELECT 
           u.name,
-          u.email,
           u.city,
           u.country,
           COUNT(r.id) AS total_attempts,
-          SUM(CASE WHEN r.distance_meters < 10 THEN 1 ELSE 0 END) AS successful_attempts,
-          ROUND(AVG(r.distance_meters)::numeric, 2) AS avg_distance,
-          SUM(r.score) AS score
+          SUM(r.score) AS total_score,
+          ROUND(AVG(r.score)::numeric, 2) AS avg_score
       FROM geoguessr_schema.users u
       LEFT JOIN geoguessr_schema.results r 
           ON u.id = r.user_id
       GROUP BY u.id, u.name, u.city, u.country
-      ORDER BY score DESC
+      ORDER BY total_score DESC
       LIMIT 50
     `);
     res.json(result.rows);
@@ -273,8 +269,6 @@ app.get("/api/leaderboard", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch leaderboard" });
   }
 });
-
-
 
 app.get("/api/me", authMiddleware, async (req, res) => {
   try {

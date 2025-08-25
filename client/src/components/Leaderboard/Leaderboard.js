@@ -48,7 +48,7 @@ const Leaderboard = () => {
                 <td>{idx + 1}</td> {/* Global Rank */}
                 <td>{entry.name}</td>
                 <td>{`${entry.city}, ${entry.country}`}</td>
-                <td>{entry.score || 0}</td>
+                <td>{entry.total_score || 0}</td>
               </tr>
             );
           })}

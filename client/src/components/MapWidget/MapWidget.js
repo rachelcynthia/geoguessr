@@ -21,7 +21,6 @@ export default function MapWidget({ currentNodePosition, currentFloor, getRandom
   const [selectedFloor, setSelectedFloor] = useState(null);
   const floorLabels = ["G", "LF", "1", "2"];
   const [infoMessage, setInfoMessage] = useState("");
-  const [overlayKey, setOverlayKey] = useState(0);
   const actualMarkerRef = useRef(null);
   const polylineRef = useRef(null);
 
